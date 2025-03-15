@@ -2,6 +2,7 @@ import os
 import asyncio
 import re
 import logging
+from pathlib import Path
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
 from oauth2client.service_account import ServiceAccountCredentials
@@ -71,7 +72,8 @@ async def get_products_data(html_content: str) -> list[dict] | None:
 
 def get_oauth2client_credentials() -> ServiceAccountCredentials | None:
     path_var = input("Enter path to Google Sheets credentials JSON file: ")
-    if not os.path.exists(path_var):
+    path = Path(__file__).parent.parent / path_var
+    if not path.exists():
         logging.error("File not found")
         return None
     scopes = [
@@ -83,7 +85,8 @@ def get_oauth2client_credentials() -> ServiceAccountCredentials | None:
 def get_worksheet(credentials: ServiceAccountCredentials) -> Spreadsheet | None:
     client = Client(auth=credentials)
     try:
-        spreadsheet = client.open(os.getenv("GOOGLE_SHEETS_TABLE_NAME"))
+        sheet_name = input("Enter google sheet name")
+        spreadsheet = client.open(sheet_name)
         return spreadsheet.get_worksheet(0)
     except Exception as e:
         logging.error(f"Failed to open spreadsheet: {e}")

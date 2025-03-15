@@ -1,8 +1,8 @@
 ## Task 1:
-Create and activate your virtual environment  
-```pip install -r requirements.txt```  
-```python3 tasks/1.async_data_fetcher.py```  
-Open result.xlsx  
+- Create and activate your virtual environment  
+- ```pip install -r requirements.txt```  
+- ```python3 tasks/1.async_data_fetcher.py```  
+- Open result.xlsx  
 
 #### Note 1:
 Добавлять env-файл в git-репозиторий - плохая практика, но в этом тестовом примере env-файл включен
@@ -11,6 +11,9 @@ Open result.xlsx
 Во время теста сервера OpenWeather периодически не подгружались, поэтому если наблюдается ошибка соединения - попробуйте чуть позже
 
 ## Task 2:
+- Place google credentials in json format in root of repository
+- ```python3 tasks/2.citilink_scraper.py```  
+- Enter credentials file name and google sheet
 
 #### Note 1:
 Не представляю возможным извлекать динамически загружаемый контент с помощью библиотеки BeautifulSoup без эмуляции браузера, например, playwright. С другой стороны - заданием это явно не запрещено
