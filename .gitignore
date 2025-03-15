@@ -2,4 +2,5 @@
 *.pdf
 test*
 *.xlsx
+*.html
 # .env

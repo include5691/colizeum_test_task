@@ -2,3 +2,6 @@ aiohttp
 python-dotenv
 pandas
 openpyxl
+gspread
+beautifulsoup4
+playwright

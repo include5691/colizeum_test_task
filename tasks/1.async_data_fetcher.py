@@ -18,13 +18,12 @@ CITIES = [
             "Tomsk", "Kemerovo", "Astrakhan", "Nizhny Tagil", "Sochi", 
         ]
 
-async def fetch_data(url) -> dict | None:
+async def fetch_data(session: aiohttp.ClientSession, url: str) -> dict | None:
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return data
+        async with session.get(url) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
     except ClientError as e:
         logging.error(f"ClientError while fetching data: {e}")
     except Exception as e:
@@ -34,7 +33,8 @@ async def fetch_all_weather_data() -> list[dict]:
     result = []
     for city in CITIES:
         url = f"http://api.openweathermap.org/data/2.5/weather?q={city},ru&appid={os.getenv('OPENWEATHER_API_KEY')}&units=metric"
-        data = await fetch_data(url)
+        async with aiohttp.ClientSession() as session:
+            data = await fetch_data(session, url)
         if not data:
             logging.error(f"No data for {city}")
             continue
