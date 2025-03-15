@@ -1,2 +1,5 @@
 .venv
 *.pdf
+test*
+*.xlsx
+# .env
