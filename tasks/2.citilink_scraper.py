@@ -1,8 +1,11 @@
+import os
 import asyncio
 import re
 import logging
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
+from oauth2client.service_account import ServiceAccountCredentials
+from gspread import Client, Spreadsheet
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -66,6 +69,30 @@ async def get_products_data(html_content: str) -> list[dict] | None:
         })
     return result
 
+def get_oauth2client_credentials() -> ServiceAccountCredentials | None:
+    path_var = input("Enter path to Google Sheets credentials JSON file: ")
+    if not os.path.exists(path_var):
+        logging.error("File not found")
+        return None
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ]
+    return ServiceAccountCredentials.from_json_keyfile_name(filename=path_var, scopes=scopes)
+
+def get_worksheet(credentials: ServiceAccountCredentials) -> Spreadsheet | None:
+    client = Client(auth=credentials)
+    try:
+        spreadsheet = client.open(os.getenv("GOOGLE_SHEETS_TABLE_NAME"))
+        return spreadsheet.get_worksheet(0)
+    except Exception as e:
+        logging.error(f"Failed to open spreadsheet: {e}")
+
+def get_columns_addr(n: int) -> str:
+    if n < 26:
+        return chr(65 + n)
+    return get_columns_addr(n // 26 - 1) + chr(65 + n % 26)
+
 async def main():
     url = "https://www.citilink.ru/catalog/processory/?sorting=price_desc"
     html_content = await fetch_page_content(url)
@@ -76,7 +103,27 @@ async def main():
     if not products:
         logging.error("Cant extract products links")
         return
-        
+    credentials = get_oauth2client_credentials()
+    if not credentials:
+        logging.error("Failed to get Google Sheets credentials.")
+        return
+    worksheet = get_worksheet(credentials)
+    if not worksheet:
+        logging.error("Failed to get Google Sheets worksheet")
+        return
+    headers = list(products[0])
+    data = [list(product.values()) for product in products]
+    try:
+        worksheet.clear()
+        worksheet.update(
+            "A1:" + get_columns_addr(len(headers) - 1) + str(len(data)),
+            data,
+            value_input_option="USER_ENTERED",
+        )
+    except Exception as e:
+        logging.error(f"Failed to update worksheet: {e}")
+        return
+    logging.info("Data successfully updated in Google Sheets")
 
 if __name__ == "__main__":
     asyncio.run(main())

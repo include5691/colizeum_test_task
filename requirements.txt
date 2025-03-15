@@ -5,3 +5,4 @@ openpyxl
 gspread
 beautifulsoup4
 playwright
+oauth2client

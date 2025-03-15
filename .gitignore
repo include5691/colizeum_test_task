@@ -1,6 +1,7 @@
 .venv
-*.pdf
+# .env
 test*
+*.pdf
 *.xlsx
 *.html
-# .env
+*.json
